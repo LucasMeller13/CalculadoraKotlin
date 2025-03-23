@@ -24,9 +24,9 @@ class VisorViewComposable {
 
 
     @Composable
-    fun VisorLayout(string_operation : String){
+    fun VisorLayout(string_operation : String, string_visor_result : String){
         val string_visor_operation by rememberUpdatedState(string_operation)
-        var string_visor_result by remember { mutableStateOf("") }
+        val string_visor_result by rememberUpdatedState(string_visor_result)
 
 //        Log.d("string_operation", string_operation)
 //        Log.d("string_visor_operation", string_visor_operation)

@@ -22,6 +22,7 @@ class KeyboardLayout() {
         val keyboard = KeyboardViewComposable()
         val visor = VisorViewComposable()
         var string_operation by remember { mutableStateOf("") }
+        var string_result by remember { mutableStateOf("") }
 
         Box(
             modifier = Modifier
@@ -29,7 +30,7 @@ class KeyboardLayout() {
                 .fillMaxSize()
         ) {
 
-            visor.VisorLayout(string_operation)
+            visor.VisorLayout(string_operation, string_result)
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -38,7 +39,9 @@ class KeyboardLayout() {
                     .background(Color.Yellow)
                     .align(Alignment.BottomEnd)
             ) {
-                string_operation = keyboard.KeyboardLayout()
+                val (new_operation, new_result) = keyboard.KeyboardLayout()
+                string_operation = new_operation
+                string_result = new_result
 
             }
 

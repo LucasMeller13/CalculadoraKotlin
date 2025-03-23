@@ -25,10 +25,16 @@ import java.util.Collections.list
 class KeyboardViewComposable {
 
     @Composable
-    fun KeyboardLayout(): String {
+    fun KeyboardLayout(): Pair<String, String> {
 
         var string_operation by remember { mutableStateOf("") }
         var string_result by remember { mutableStateOf("") }
+
+        try {
+            string_result = calculateOperation(string_operation)
+        }catch (e : Exception){
+            null
+        }
 
         //Log.d("string_operation", string_operation)
         createButtonsLayout(listOf("1", "2", "3", "+"), string_operation, onOperationChange = { string_operation = it })
@@ -37,7 +43,7 @@ class KeyboardViewComposable {
         createButtonsLayout(listOf("C", "0", "=", "/"), string_operation, onOperationChange = { string_operation = it })
         Log.d("string_operation", string_operation)
         Log.d("string_operation_length", string_operation.length.toString())
-        return string_operation
+        return Pair(string_operation, string_result)
 
     }
 
@@ -86,7 +92,12 @@ class KeyboardViewComposable {
     }
 
     fun calculateOperation(string_operation : String) : String{
-        val temp_string_operation = string_operation
+        var temp_string_operation = string_operation
+
+        while (temp_string_operation.isNotEmpty() && !temp_string_operation[temp_string_operation.length - 1].isDigit()) {
+            temp_string_operation = temp_string_operation.substring(0, temp_string_operation.length - 1)
+        }
+
         var list_single_operation = mutableListOf<String>()
         var list_sign_operation = mutableListOf<String>()
         list_single_operation = temp_string_operation.split("+","-").toMutableList()
@@ -101,63 +112,50 @@ class KeyboardViewComposable {
             list_sign_operation.removeAt(0)
         }
 
-        if(list_single_operation.last() == null){
-            list_single_operation.removeAt(list_single_operation.size - 1)
-        }
-
-        if (list_sign_operation.size >= list_single_operation.size){
-            list_sign_operation.removeAt(list_sign_operation.size - 1)
-        }
-
         var result = list_single_operation.first()
         var counter = 0
 
-        for(string in list_single_operation.subList(1, list_single_operation.size)){
-            if(list_sign_operation[counter] == "+"){
-                result = (result.toDouble() + string.toDouble()).toString()
-            } else if(list_sign_operation[counter] == "-"){
-                result = (result.toDouble() - string.toDouble()).toString()
+        if(list_single_operation.size == 1){
+            result = processDivision(result)
+        }else{
+            for(string in list_single_operation.subList(1, list_single_operation.size)){
+                if(list_sign_operation[counter] == "+"){
+                    result = (result.toDouble() + processDivision(string).toDouble()).toString()
+                } else if(list_sign_operation[counter] == "-"){
+                    result = (result.toDouble() - processDivision(string).toDouble()).toString()
+                }
+                counter++
             }
-            counter++
         }
-
         return result
     }
 
-    fun processDivision(stringDivision : String) : String{
-        val list_string = stringDivision.split("r")
-        if(stringDivision.contains("*")){
-            val list_string = stringDivision.split("*")
+    fun processDivision(stringDivision : String) : String {
+        if (!(stringDivision.contains("/") || stringDivision.contains("*"))) {
+            return stringDivision
+        }
+        var list_string = stringDivision.split("r")
+        if (stringDivision.contains("/")) {
+            list_string = stringDivision.split("/")
         }
 
-        var result_division = 0.0
-        var result_multiplication = 0.0
-        //result = checkMultiplication(result)
+        var result_multiplication = 1.0
 
-        for (string in list_string){
-            val temp_division = string.split("/")
-            result_division = temp_division.first().toDouble()/temp_division.last().toDouble()
-            result_multiplication *= result_division
+        for (string in list_string) {
+            var temp = string
+            if (string.contains("*")) {
+                val temp_division = string.split("*")
+                var calc = 1.0
+                for (x in temp_division) {
+                    calc *= x.toDouble()
+                }
+                result_multiplication = calc
+            } else {
+                result_multiplication /= temp.toDouble()
+            }
         }
 
         return result_multiplication.toString()
-    }
-
-    fun checkMultiplication(string : String) : String{
-        if(string.contains("*")){
-            return processMultiplication(string)
-        }
-        return string
-    }
-
-    fun processMultiplication(stringMultiplication : String) : String{
-        val list_string = stringMultiplication.split("*")
-        var result = 1.0
-        for (string in list_string){
-            result *= string.toDouble()
-        }
-
-        return result.toString()
     }
 
 }
